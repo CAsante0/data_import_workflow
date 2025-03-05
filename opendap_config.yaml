@@ -1,0 +1,41 @@
+server:
+  url: "https://whatever-errdap.com/"
+  timeout: 30
+  retries: 3
+  secure_connection: true
+datasets:
+  name: "dataset_1"
+  dataset_url: "/data/dataset_1.nc"
+  variables:
+    - name: "temperature"
+      dimensions: ["time", "lat", "lon"]
+      range:
+        time: ["2021-01-01", "2021-12-31"]
+        lat: [0, 90]
+        lon: [0, 180]
+    - name: "salinity"
+      dimensions: ["time", "lat", "lon"]
+      range:
+        time: ["2021-01-01", "2021-12-31"]
+        lat: [-90, 90]
+        lon: [-180, 180]
+#  - name: "dataset_2"
+#    dataset_url: "/data/dataset_2.nc"
+#    variables:
+#      - name: "sea_surface_temperature"
+#        dimensions: ["time", "lat", "lon"]
+#        range:
+#          time: ["2021-06-01", "2021-08-31"]
+#          lat: [-90, 90]
+#          lon: [-180, 180]
+query:
+  output_format: "netCDF"
+  chunk_size: 1000
+  fetch_all: false
+data_processing:
+  remove_outliers: true
+  interpolation_method: ""
+  fill_value: "NaN"
+  aggregation:
+    method: "mean"
+    time_window: "1D"
