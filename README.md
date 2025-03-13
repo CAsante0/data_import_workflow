@@ -4,17 +4,14 @@ This library automates data retrieval using a user-supplied configuration file, 
 
 Once the system reads the configuration file, it initializes the correct data import class and runs the retrieval workflow. The data is then formatted and saved, ready for use in an existing processing pipeline or repository. This setup allows users to automate recurring data pulls, keeping datasets up to date for analysis. By handling platform-specific details behind the scenes, this module reduces time spent on data acquisition and ensures consistency across updates.
 
-# Class Structure and Design
 
+# Modules:
 
-
-## Modules:
-
-### config
+## config
 - yaml based configuration file that users can edit 
 - abstract enought to be applied to a variety of geospatial/environmental data platform interfaces in unison with the parse_config module
 
-### util/data_transfer.py
+## util/data_transfer.py
 The ImportDatasets class defines a base structure for retrieving and formatting datasets from a variety of data platforms. Child classes implement platform-specific workflows to ensure efficient data access, making the ImportDatasets class easily expandable to a variety of workflows.
 
 Child Classes:
