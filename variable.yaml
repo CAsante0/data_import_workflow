@@ -6,31 +6,17 @@ server:
   timeout: int
   retries: int
   secure_connection: boolean
+  dap_type: "gridded"
 datasets:
-  - name: str
-    dataset_url: str
-    variables:
-      - name: str
-        dimensions: List[str]
-        range:
-          time: List[str]
-          lat: List[int]
-          lon: List[int]
-      - name: str
-        dimensions: List[str]
-        range:
-          time: List[str]
-          lat: List[int]
-          lon: List[int]
-  - name: str
-    dataset_url: str
-    variables:
-      - name: str
-        dimensions: List[str]
-        range:
-          time: List[str]
-          lat: List[int]
-          lon: List[int]
+  name: str
+  dataset_url: str
+  variables:
+    - name: List[str]
+      dimensions: List[str]
+      range:
+        time: List[str]
+        lat: List[int]
+        lon: List[int]
 query:
   output_format: str
   chunk_size: int
