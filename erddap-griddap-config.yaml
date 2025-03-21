@@ -1,9 +1,9 @@
 server:
-  url: "https://coastwatch.noaa.gov/"
+  url: "https://coastwatch.noaa.gov"
   timeout: 30
   retries: 3
   secure_connection: true
-  dap_type: "gridded"
+  dap_type: "griddap" #should be tabledap or griddap
 datasets:
   name: "noaacwNPPN20S3ASCIDINEOF2kmDaily"
   dataset_url: ""
@@ -11,12 +11,11 @@ datasets:
     - name: ["chlor_a"]
       dimensions: ["time", "lat", "lon"]
       range:
-        time: ["2021-01-01", "2021-12-31"]
-        lat: [0, 90]
-        lon: [0, 179]
+        time: ["2025-01-09", "2025-03-06"]
+        lat: [-67.989586, -80.989586]
+        lon: [133.98961, 161.98961]
 query:
-  output_format: "nc"
-  #outputformat can be any one of:  .csv, .htmlTable, .itx, .json, .jsonlCSV1, .jsonlCSV, .jsonlKVP, .mat, .nc, .nccsv, .tsv, or .xhtml
+  output_format: "nc" #outputformat can be any one of:  .csv, .htmlTable, .itx, .json, .jsonlCSV1, .jsonlCSV, .jsonlKVP, .mat, .nc, .nccsv, .tsv, or .xhtml
   chunk_size: 1000
   fetch_all: false
 data_processing:
@@ -26,3 +25,5 @@ data_processing:
   aggregation:
     method: "mean"
     time_window: "1D"
+
+

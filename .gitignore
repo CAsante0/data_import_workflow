@@ -1,9 +1,10 @@
-venv
+venv/
 testing/
 authentication.py
 app.py
 notes
 util/pycache
-__pycache__
+__pycache__/
 error_handler
 opendap/
+test_resources/
