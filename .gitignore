@@ -2,8 +2,7 @@ venv/
 **/authentication.py
 app.py
 notes
-util/pycache
-__pycache__/
+**/__pycache__/
 **/error_handling.py
 opendap/
 test_resources/
