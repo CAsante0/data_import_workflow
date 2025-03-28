@@ -1,10 +1,14 @@
 venv/
-testing/
-authentication.py
+**/authentication.py
 app.py
 notes
 util/pycache
 __pycache__/
-error_handler
+**/error_handling.py
 opendap/
 test_resources/
+**/__pycache__
+**/.pytest_cache/
+testing/case1/*
+testing/case2/*
+testing/case3/*

@@ -1,0 +1,29 @@
+
+# arguments are organized as [type, required_field(bool)]
+server:
+  url: str
+  timeout: int
+  retries: int
+  secure_connection: boolean
+  dap_type: "gridded"
+datasets:
+  name: str
+  dataset_url: str
+  variables:
+    - name: List[str]
+      dimensions: List[str]
+      range:
+        time: List[str]
+        lat: List[int]
+        lon: List[int]
+query:
+  output_format: str
+  chunk_size: int
+  fetch_all: boolean
+data_processing:
+  remove_outliers: boolean
+  interpolation_method: str
+  fill_value: 
+  aggregation:
+    method: str
+    time_window: str

@@ -5,7 +5,7 @@ server:
   secure_connection: true
   dap_type: "griddap" #should be tabledap or griddap
 datasets:
-  name:  "noaacwNPPN20S3ASCIDINEOF2kmDaily"
+  name: "noaacwNPPN20S3ASCIDINEOF2kmDaily"
   dataset_url: ""
   variables:
     - name: ["chlor_a"]
