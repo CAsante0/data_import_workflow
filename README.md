@@ -45,3 +45,46 @@ Each child class extends ImportDatasets to implement workflows tailored to its r
 
 
 
+
+
+Running tests:
+
+To run tests, install pytest using the following command:
+
+pip install pytest
+
+From there, cd into either the data_retrieval or parser_testing directories. Run a test on either using the command:
+
+pytest test_parse_config.py (or test_data_retrieval.py if in the data_retrival directory)
+
+
+
+Running the application with test data:
+
+Requirements
+
+Install all required python packages using the below command in the main application directory:
+
+pip install -r requirements.txt
+
+Creating a Config File
+
+The configuration file defines the target resource parameters and the source server. Expansion into other data platforms (OpenDAP, Globus, etc) are in progress.
+
+
+In order to create your own validation file by copying either of the provided config yaml files (ex: erddap-griddap-config.yaml) and editing with the necessary values to create your own configuration file. Use the path of your create config file as the first argument in running the application. The required data types for each field are defined within the variable.yaml file which should only be changed if a new version of the configuration file is released.
+
+
+Running the Application
+
+To run the application, ensure you are in the main application directory (same directory as app.py) and run the below command with your config file and the validation file. 
+
+./app.py {config file path} variable.yaml
+
+
+As of now the target datasets are being printed within terminal. Expansion will include 
+
+
+
+
+

@@ -8,9 +8,5 @@ opendap/
 test_resources/
 **/__pycache__
 **/.pytest_cache/
-**/parser_testing/case1/*
-**/testing/case2/*
-**/testing/case3/*
-**/test_parse_config.py
 **error_handling.py
 

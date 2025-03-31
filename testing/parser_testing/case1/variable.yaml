@@ -5,7 +5,7 @@ server:
   timeout: int
   retries: int
   secure_connection: boolean
-  dap_type: "gridded"
+  dap_type: str
 datasets:
   name: str
   dataset_url: str

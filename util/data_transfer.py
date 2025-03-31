@@ -54,6 +54,7 @@ class ERDDAP(ImportDatasets):
         self.dataset = None
 
 
+
     def fetch_dataset(self, file_type: str, stream : bool = True, manual_source_url : str = None):
         """
         Fetch the resource given the user-defined parameters from the configuration file
@@ -75,15 +76,15 @@ class ERDDAP(ImportDatasets):
             if file_type == "csv":
                 if stream:
                     self.set_dataset(pd.read_csv(BytesIO(response.content)))
-                    return pd.read_csv(BytesIO(response.content))
+                    return pd.read_csv(BytesIO(response.content)), response.content
                 self.set_dataset(pd.read_csv(BytesIO(response.content)))
-                return pd.read_csv(BytesIO(response.content))
+                return pd.read_csv(BytesIO(response.content)), response.content
             if file_type == 'nc':
                 if stream:
                     self.set_dataset(xr.open_dataset(BytesIO(response.content)))
-                    return xr.open_dataset(BytesIO(response.content))
+                    return xr.open_dataset(BytesIO(response.content)), response.content
                 self.set_dataset(xr.open_dataset(BytesIO(response.content)))
-                return xr.open_dataset(BytesIO(response.content))
+                return xr.open_dataset(BytesIO(response.content)), response.content
         except requests.exceptions.HTTPError as err: 
             if response.status_code == 500:
                 print(f"Error Code 500: Internal server error. Server response: {response.content}")

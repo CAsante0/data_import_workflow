@@ -17,6 +17,7 @@ def config_file_handler(filename : str, validation_config : str = None) -> dict:
     config_arg_object = ParseConfig(config_path=filename, validation_config_path=validation_config)
     if config_arg_object.validate_config_params() == True:
         return config_arg_object.parameter_args_dict
+    
     raise print("Your configuration file is ")
 
 
@@ -33,22 +34,20 @@ def main():
     server_params = param_dict['server'] # source/target endpoints 
     query_params = param_dict['query'] # file details
     
-    
     print(f"dataset_params: {dataset_params}")
     print(f"server_params: {server_params}")
     print(f"query_params: {query_params}")
     
-    
-    # Initialize an ERDDAP Import Workflow 
-
     '''
-    This sequence:
+    Initialize an ERDDAP Import Workflow 
 
     Parses the User Provided configuration files
     Creates an ERDDAP Object
     Fetches the target resource and saves it to the ERDDAP Object
     
     '''
+
+
     import_ds_obj = ERDDAP(
             base_erddap_url=server_params['url'],
             dataset_id=dataset_params['name'],
@@ -57,15 +56,16 @@ def main():
             param_variables= dataset_params['variables'][0]['name'],
             constraint_variables=dataset_params['variables'][0]['range']
     )
+    #print(f"Server url: {import_ds_obj.server_url}")
+    dataset, response = import_ds_obj.fetch_dataset(query_params['output_format'], stream=False)
+    #print(f"{import_ds_obj.dataset}, {response}")
+    '''
+    Uncomment below to write the response to the application output directory.
 
-    print(f"this is the server url: {import_ds_obj.server_url}")
+    with open(f'response.{query_params['output_format']}', "wb") as output_file:
+        output_file.write(response)
 
-    import_ds_obj.fetch_dataset(query_params['output_format'], stream=False)
-
-    print(f"this is the dataset \n {import_ds_obj.dataset}")
-
-    
-
+    '''
 
 
 if __name__ == "__main__":
