@@ -1,80 +1,71 @@
 import os
 from util.parse_config import ParseConfig, ConfigValidationError
 from util.data_transfer import ImportDatasets, ERDDAP
+import sys
 
 
 
-def config_file_handler(filename : str) -> dict:
+def config_file_handler(filename : str, validation_config : str = None) -> dict:
     """
     Function for handling all configuration parsing 
-
     params: 
     filename : the relative path of the configuration file
 
     returns
     param_dict : a dictionary of the parsed configuration.yaml
     """
-    config_arg_object = ParseConfig(config_path=filename)
-
-    #print(config_arg_object.parameter_args_dict)
-
+    config_arg_object = ParseConfig(config_path=filename, validation_config_path=validation_config)
     if config_arg_object.validate_config_params() == True:
         return config_arg_object.parameter_args_dict
+    
     raise print("Your configuration file is ")
 
 
 
-def fetch_dataset(param_dict):
-
-    pass
-
-
 def main():
 
+    source_config = sys.argv[1]
+    validation_config = sys.argv[2]
 
-### Format and Configure Parameters, source platforms, and target endpoints ###
+    param_dict = config_file_handler(filename = source_config, validation_config = validation_config) 
 
-    # generate parameter dictionary from config file and validate entries
-    param_dict = config_file_handler("C:\\Users\\christina.asante\\Desktop\\erddap\\opendap\\erddap-tabledap-config.yaml") 
-
-    print(param_dict)
-    # extract parameter values into their own dictionaries 
+    # Setting parameter dictionaries
     dataset_params = param_dict['datasets'] # datasets to search for 
     server_params = param_dict['server'] # source/target endpoints 
     query_params = param_dict['query'] # file details
-
-    #preprocess_params = param_dict['data_processing'] #not that important rn
-
+    
     print(f"dataset_params: {dataset_params}")
     print(f"server_params: {server_params}")
     print(f"query_params: {query_params}")
+    
+    '''
+    Initialize an ERDDAP Import Workflow 
 
-    import_ds_obj = ERDDAP()
-    import_ds_obj.format_erddap_url(dataset_params['name'],  dataset_params['variables'][0]['name'], dataset_params['variables'][0]['range'], query_params['output_format'], server_params)
-    x = import_ds_obj.fetch_dataset(query_params['output_format'], stream=False)
-
-    print(x)
-
-
-    #source_opendap = server_params('')
-
-
-    # configure endpoint server
+    Parses the User Provided configuration files
+    Creates an ERDDAP Object
+    Fetches the target resource and saves it to the ERDDAP Object
+    
+    '''
 
 
-### Data Retrieval ###
-    # Format parameters for URL
-    # Pull data from endpoint specific in server_params dict
+    import_ds_obj = ERDDAP(
+            base_erddap_url=server_params['url'],
+            dataset_id=dataset_params['name'],
+            dap_type=server_params['dap_type'],
+            file_type=query_params['output_format'],
+            param_variables= dataset_params['variables'][0]['name'],
+            constraint_variables=dataset_params['variables'][0]['range']
+    )
+    #print(f"Server url: {import_ds_obj.server_url}")
+    dataset, response = import_ds_obj.fetch_dataset(query_params['output_format'], stream=False)
+    #print(f"{import_ds_obj.dataset}, {response}")
+    '''
+    Uncomment below to write the response to the application output directory.
 
-### Preprocess Data ### (optional)
+    with open(f'response.{query_params['output_format']}', "wb") as output_file:
+        output_file.write(response)
 
-    # subset/augment data based on input parameters
-    # qc on metadata 
-
-### Import Formatted Dataset to Target Location ###
-
-    # import datasets into target repositories or staging environments
-
+    '''
 
 
 if __name__ == "__main__":

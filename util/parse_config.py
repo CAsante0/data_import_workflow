@@ -77,17 +77,16 @@ class ParseConfig:
     
     """
 
-    def __init__(self, config_path : str):
+    def __init__(self, config_path : str, validation_config_path = None):
         """
         Current configuration file entries/.
         """
-        print(config_path)
-        print(type(config_path))
+
         self.parameter_args_dict = ParseConfig._parse_configuration_file(config_path)
-        self.parameter_types_dict = ParseConfig._parse_configuration_file(None) # generates validation file
+        self.parameter_types_dict = ParseConfig._parse_configuration_file(validation_config_path) # generates validation file
 
 
-    def _parse_configuration_file(config_name : str = None) -> dict:
+    def _parse_configuration_file(config_path : str) -> dict:
         """
         Parses config and data type validation (variable.yaml) files. If a config file is not provided the validation (variable.yaml) file 
         will be parsed
@@ -99,25 +98,15 @@ class ParseConfig:
         ConfigValidationErrors in the case the configuration file or validation file are incorrectly formatted. 
         """ 
 
-        try: 
-            if(config_name):  
-                current_file = config_name #make this pretty
-                with open(config_name, 'r') as file:
-                    config_data = yaml.safe_load(file)
-                #self.parameter_args_dict = githubconfig_data
-                #print_formatted_dict(config_data)
-                print(config_data)
-                return config_data
-        
-            current_file = "C:\\Users\\christina.asante\\Desktop\\erddap\\opendap\\variable.yaml"
-            with open('C:\\Users\\christina.asante\\Desktop\\erddap\\opendap\\variable.yaml', 'r') as file:
-                parameter_type_assignments = yaml.safe_load(file)
-            return parameter_type_assignments
+        try:  
+            with open(config_path, 'r') as file:
+                config_data_dict = yaml.safe_load(file)
+            return config_data_dict
         
         except FileNotFoundError as e:
-            raise ConfigValidationError([f'There is an issue with the location of the {current_file}: {e}'])
+            raise ConfigValidationError([f'There is an issue with the location of the {config_path}: {e}'])
         except json.JSONDecodeError as e:
-            raise ConfigValidationError([f'There was an error with the format of your {current_file}: {e}'])
+            raise ConfigValidationError([f'There was an error with the format of your {config_path}: {e}'])
         
 
 
@@ -144,9 +133,8 @@ class ParseConfig:
 
         ConfigValidationError.config_shape_validation(error_log, flattened_param_args, flattened_param_types )
 
-        #print(flattened_param_args)
         for key in flattened_param_args.columns:
-            print(key)
+
             config_args = flattened_param_args[key]
             config_type_rule = flattened_param_types[key]
 

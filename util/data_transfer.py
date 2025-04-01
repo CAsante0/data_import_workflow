@@ -1,4 +1,4 @@
-import pydap
+
 import urllib
 import xarray as xr
 import pandas as pd
@@ -6,6 +6,7 @@ from datetime import date, datetime
 #import erddapy
 import requests
 from io import BytesIO
+from abc import ABC, abstractmethod
 #from authentication import Authentication
 
 
@@ -16,55 +17,74 @@ class ImportDatasets():
         #super().__init__(source_url)
         #uncomment this when transfer resources is initialized
 
+    @abstractmethod
     def fetch_dataset(self, dataset, parameters, constraints):
-        pass
-
+        '''
+        Fetches the dataset for the given resource
+        '''
+    #@abstractmethod
+    def derive_resource_parameters(self, **kwargs):
+        '''
+        Creates a configuration file based on the manual url of the resource
+        '''
 
 class ERDDAP(ImportDatasets):
 
 
-    def test__init__(self, server_url : str, dataset_id : str, param_variables : list[str], dap_type : str, file_type: str, constraint_variables : list[str]):
+    def __init__(self, base_erddap_url : str, dataset_id : str, dap_type : str, file_type: str,  param_variables : list[str], constraint_variables : list[str]):
         """
-        
-        ######Draft of the eventual erddap object 
-        
-        
+        ERDDAP Data Source Object defines componenets of the source server URL
+
+        base_erddap_url : The base URL of the source server
+        dataset_id : The ID of the dataset
+        dap_type : The dap type of the erddap resource (tabledap or griddap)
+        file_type : The file type of the response
+        param_variables : The parameters (limited to 1 for griddap queries)
+        constrain_variables : A dictionary of constraint variables along with a range represented as a list ex: { 'latitude' : [0, 90]}
         """
-        self.server_url = server_url
+        self.base_erddap_url = base_erddap_url
         self.dataset_id = dataset_id
+        self.file_type = file_type
+        self.dap_type = dap_type
+
         self.param_variables = param_variables
         self.constraint_variables = constraint_variables
-        self.compose_source_endpoint_url = ERDDAP.compose_erddap_base_url(server_url, dap_type, dataset_id, file_type)
+
+        self.server_url = self.format_erddap_url()
+        self.dataset = None
 
 
-    def fetch_dataset(self, file_type: str, stream : bool = False, manual_source_url : str = None):
+
+    def fetch_dataset(self, file_type: str, stream : bool = True, manual_source_url : str = None):
         """
         Fetch the resource given the user-defined parameters from the configuration file
-
-        ###this can eventually be moved to the import datsets class when opendap and globus api are both integrated
-        ###what additional filetypes should be supplied?
         
         args:
         ERDDAP object with source initialized
         source_url (optional) : a manually generated URL
         """
-        source = self.source_url
-        if manual_source_url: # add handling for different filetypes
+        source = self.server_url
+        if manual_source_url:
             source = manual_source_url
         encoded_source = urllib.parse.quote(source, safe=":/?&=()")
+        
         try: 
-            response = requests.get(encoded_source, stream = True)
+            response = requests.get(encoded_source, stream = stream)
             response.raise_for_status()
 
             #add cases for opening different filetypes here
             if file_type == "csv":
                 if stream:
-                    return pd.read_csv(BytesIO(response.content))
-                return pd.read_csv(BytesIO(response.content))
+                    self.set_dataset(pd.read_csv(BytesIO(response.content)))
+                    return pd.read_csv(BytesIO(response.content)), response.content
+                self.set_dataset(pd.read_csv(BytesIO(response.content)))
+                return pd.read_csv(BytesIO(response.content)), response.content
             if file_type == 'nc':
                 if stream:
-                    return xr.open_dataset(BytesIO(response.content))
-                xr.open_dataset(encoded_source)
+                    self.set_dataset(xr.open_dataset(BytesIO(response.content)))
+                    return xr.open_dataset(BytesIO(response.content)), response.content
+                self.set_dataset(xr.open_dataset(BytesIO(response.content)))
+                return xr.open_dataset(BytesIO(response.content)), response.content
         except requests.exceptions.HTTPError as err: 
             if response.status_code == 500:
                 print(f"Error Code 500: Internal server error. Server response: {response.content}")
@@ -90,8 +110,6 @@ class ERDDAP(ImportDatasets):
         formatted constraint string
         """
 
-        print(key)
-        print(value)
         datetime_format = "%Y-%m-%d"
         # time
         if key == 'time':
@@ -114,7 +132,6 @@ class ERDDAP(ImportDatasets):
                 return f"&time>={earliest_date}&time<={latest_date}"
         # altitude -- always 0,0
         if key == 'altitude':
-            print(f"these are the values: {value}")
             if dap_type == "griddap":
                 return f"[({value[0]}):1:({value[1]})]"
             if dap_type == "tabledap":
@@ -167,21 +184,21 @@ class ERDDAP(ImportDatasets):
         #for dimension, constraint in dimension_constraint_dict.items():
         for dimension in griddap_constraint_order:
 
-            print(f"the dim: {dimension}")
+   
             if dimension in dimension_constraint_dict:
             
                 additional_query = ERDDAP._dimension_assignment(key = dimension, 
                                                                 value = dimension_constraint_dict[dimension], 
                                                                 dap_type = dap_type)
-                print(additional_query)
+        
             
             constraint_query_string = constraint_query_string + additional_query
 
         return constraint_query_string #there is one consistent constraint string for tabledap variables and one per value in griddap
     
 
-    @staticmethod #doesnt do anything until tabledap and griddap are separated use format erddap url
-    def _format_erddap_gridded_url(constraints: str, gridap_variables : list) -> str:
+    @staticmethod #doesnt do anything 
+    def _format_erddap_gridded_url(constraints: str, griddap_variables : list) -> str:
         """
         Formats a url based on erddap gridded datasets
         
@@ -193,51 +210,67 @@ class ERDDAP(ImportDatasets):
         formatted query string combining variables with user defined constraints
         """
         query = ""
-        for var in gridap_variables:
+        for var in griddap_variables:
             query = query + var + constraints
-
-        # check variables against compliance from griddap accepted in config validation
 
         return query
 
-    def compose_erddap_base_url(server_url : str, dap_type : str, dataset_id : str, file_type : str) -> str:
-         
-        return f"{server_url}/erddap/{dap_type}/{dataset_id}.{file_type}?"
 
-    def format_erddap_url(self, dataset_id : str, field_variables : list, constraint_variables: dict,file_type : str, base_url: str, dap_type : str) -> None:
+    @staticmethod # doesnt do anything until 
+    def _format_erddap_tabledap_url(constraints: str, tabledap_variables : list) -> str:
+        pass
+
+    def compose_erddap_base_url(base_erddap_url : str, dataset_id : str, dap_type : str, file_type : str, constraint_extension: str) -> str:
+         
+        #return f"{server_url}/erddap/{dap_type}/{dataset_id}.{file_type}?"
+        return f"{base_erddap_url}/erddap/{dap_type}/{dataset_id}.{file_type}?{constraint_extension}"
+
+    def set_dataset(self, dataset) -> None:
+        self.dataset = dataset
+
+    def set_parameter_variables(self, param_variables : list) -> None:
+        self.param_variables = param_variables
+
+    def set_constraint_variables(self, constraint_variables : dict) -> None:
+        self.constraint_variables = constraint_variables
+        pass
+
+
+    def format_erddap_url(self, dataset_id : str = None, field_variables : list = None, constraint_variables: dict = None,file_type : str = None, base_url: str = None, dap_type : str = None) -> str:
         """
-        ##eventually all params should come from an erddap object
         Formats an ERDDAP compliant URL string 
         
         params:
-        dataset : dictionary containing expected dataset id, variables, and dimension constraints
-        file_type : contains format for output file
-        source_details : dictionary containing source url details
+        dataset_id : The unique ID of the erddap dataset
+        field_variables : Parameters within the final dataset (chlor_a, degrees, count, etc)
+        constraint_variables : A dictionary containing variables along with their range constraints
+        file_type : The file type of the returned dataset
+        base_url : The ERDDAP base url
+        dap_type : The dap type of the target resource (gridded or tabledap)
         
         returns:
         ERDDAP formatted URL
         """
-        # Formatting base url 
-        base_formatted_url = ERDDAP.compose_erddap_base_url(server_url = base_url, dap_type = dap_type, dataset_id = dataset_id, file_type = file_type)
         full_constraint_query = ""
         
         # Formatting constraints
-        formatted_constraints = ERDDAP._format_constraints( dimension_constraint_dict=constraint_variables, dap_type= dap_type)
+        formatted_constraints = ERDDAP._format_constraints( 
+            dimension_constraint_dict=self.constraint_variables, 
+            dap_type= self.dap_type)
 
-    
-        # Compose final URL
-        if dap_type == "griddap":
-            #_format_erddap_gridded_url
-            full_constraint_query = f"{formatted_constraints}".join(map(str, field_variables)) + formatted_constraints # to put into format_erddap_gridded function
-        if dap_type == 'tabledap':
-            #_format_erddap_tabledap_url
-            print(f"these are the field variables: {field_variables}")
-            full_constraint_query = ",".join(map(str, field_variables)) + formatted_constraints
+        # Compose final constraint extension given the dap_type
+        if self.dap_type == "griddap":
+            full_constraint_query = f"{formatted_constraints}".join(map(str, self.param_variables)) + formatted_constraints # to put into format_erddap_gridded function
+        if self.dap_type == 'tabledap':
+            full_constraint_query = ",".join(map(str, self.param_variables)) + formatted_constraints
        
-        full_url = base_formatted_url+full_constraint_query
-
-        self.source_url = full_url
-        print(f"this is the full url: {full_url}")
+        full_url = ERDDAP.compose_erddap_base_url(
+                        base_erddap_url = self.base_erddap_url,
+                        dataset_id = self.dataset_id,
+                        dap_type = self.dap_type,
+                        file_type = self.file_type,
+                        constraint_extension = full_constraint_query
+        )
         return full_url
 
     def set_manual_source_url(self, url : str = None) -> None:

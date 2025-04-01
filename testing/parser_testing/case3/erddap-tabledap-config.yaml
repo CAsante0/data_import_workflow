@@ -1,0 +1,34 @@
+server:
+  url: "https://ncei.noaa.gov"
+  timeout: 30
+  retries: 3
+  secure_connection: true
+  dap_type: "tabledap" #should be tabledap or griddap
+datasets:
+  name: "CRCP_ARMS_Cryptic_Reef_Diversity_Pacific"
+  dataset_url: ""
+  variables:
+    - name: ["Region", "Island", "Count"] #these must be fully typed for tabledap variables
+      dimensions: ["time", "lat", "lon"] #
+      range:
+        time: ["2016-06-01", "2017-06-20"]
+        lat: [14.6, 18.4]
+        lon: [-178.37, 166]
+query:
+  output_format: "csv" #outputformat can be any one of:  .csv, .htmlTable, .itx, .json, .jsonlCSV1, .jsonlCSV, .jsonlKVP, .mat, .nc, .nccsv, .tsv, or .xhtml
+  chunk_size: 1000
+  fetch_all: false
+data_processing:
+  remove_outliers: true
+  interpolation_method: ""
+  fill_value: "NaN"
+  aggregation:
+    method: "mean"
+    time_window: "1D"
+
+#win 
+#https://www.ncei.noaa.gov/erddap/tabledap/CRCP_ARMS_Cryptic_Reef_Diversity_Pacific.csv?
+#time%2Clatitude%2Clongitude&
+#time%3E=2015-11-01&time%3C=2017-06-20T00%3A00%3A00Z&
+#latitude%3E=18.4&latitude%3C=22.8
+#&longitude%3E=-52&longitude%3C=100
