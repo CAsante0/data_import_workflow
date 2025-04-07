@@ -27,8 +27,4 @@ data_processing:
     time_window: "1D"
 
 #win 
-#https://www.ncei.noaa.gov/erddap/tabledap/CRCP_ARMS_Cryptic_Reef_Diversity_Pacific.csv?
-#time%2Clatitude%2Clongitude&
-#time%3E=2015-11-01&time%3C=2017-06-20T00%3A00%3A00Z&
-#latitude%3E=18.4&latitude%3C=22.8
-#&longitude%3E=-52&longitude%3C=100
+#https://www.ncei.noaa.gov/erddap/tabledap/CRCP_ARMS_Cryptic_Reef_Diversity_Pacific.csv?time%2Clatitude%2Clongitude&time%3E=2015-11-01&time%3C=2017-06-20T00%3A00%3A00Z&latitude%3E=18.4&latitude%3C=22.8&longitude%3E=-52&longitude%3C=100
