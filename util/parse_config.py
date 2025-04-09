@@ -8,6 +8,8 @@ import json
 import sys 
 from urllib.parse import unquote
 from datetime import datetime
+import ruamel.yaml
+import yaml
 
 def print_formatted_dict(dict_obt : dict, indent = 0) -> None:
     for key, value in dict_obt.items():
@@ -188,32 +190,46 @@ class ParseConfig:
                 'constraints' : dataset_params
         }
 
+            
+
+    def _flow_list(x):
+        retval = ruamel.yaml.comments.CommentedSeq(x)
+        retval.fa.set_flow_style()  # fa -> format attribute
+        return retval
         
     def populate_config(args : dict) -> None:
-
 
         with open('../erddap-griddap-config.yaml', 'r') as file:
             data = yaml.safe_load(file)
         print(data)
 
+        repl_val = ""
+        if '.csv' in args['dataset_id']:
+            repl_val = '.csv'
+        if '.nc' in args['dataset_id']:
+            repl_val = '.nc'
+
         data['server']['url'] = args['base_url']
         data['server']['dap_type'] = args['dap_type']
-        data['datasets']['name'] = args['dataset_id']
+        data['datasets']['name'] = args['dataset_id'].replace(repl_val, "")
         data['datasets']['dataset_url'] = args['full_url']
         # dataset constraints
-        data['datasets']['variables'][0]['name'] = args['constraints']['dataset_variables']
-        data['datasets']['variables'][0]['dimensions'] = ['time', 'latitude', 'longitude']
-        data['datasets']['variables'][0]['range']['time'] = args['constraints']['time']
-        data['datasets']['variables'][0]['range']['lat'] = args['constraints']['latitude']
-        data['datasets']['variables'][0]['range']['long'] = args['constraints']['longitude']
+        data['datasets']['variables'][0]['name'] = ParseConfig._flow_list(args['constraints']['dataset_variables'])
+        data['datasets']['variables'][0]['dimensions'] = ParseConfig._flow_list(['time', 'latitude', 'longitude'])
+        data['datasets']['variables'][0]['range']['time'] = ParseConfig._flow_list(args['constraints']['time'])
+        data['datasets']['variables'][0]['range']['lat'] = ParseConfig._flow_list(args['constraints']['latitude'])
+        data['datasets']['variables'][0]['range']['long'] = ParseConfig._flow_list(args['constraints']['longitude'])
 
         if args['dap_type'] == 'griddap':
             data['query']['output_format'] = "nc"
         else:
             data['query']['output_format'] = "csv"
 
-        with open(f'erddap-{args['dap_type']}-config-{time.localtime()}.yaml', 'w') as new_file:
-            yaml.dump(data, new_file)
+        yml = ruamel.yaml.YAML()
+
+
+        with open(f'../output/erddap-{args['dap_type']}-config-{time.strftime("%Y-%m-%d", time.localtime())}.yaml', 'w') as new_file:
+            yml.dump(data, new_file)
             
     
     def extract_erddap_table_params(query : str) -> None:
@@ -300,8 +316,7 @@ class ParseConfig:
         returns:
         None
         """
-        print(unquote(query))
-
+     
         query = unquote(query)
         
         vars = re.match(r'^[^\[]+', query).group()

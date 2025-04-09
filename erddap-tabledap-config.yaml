@@ -13,7 +13,7 @@ datasets:
       range:
         time: ["2016-06-01", "2017-06-20"]
         lat: [14.6, 18.4]
-        lon: [-178.37, 166]
+        long: [-178.37, 166]
 query:
   output_format: "csv" #outputformat can be any one of:  .csv, .htmlTable, .itx, .json, .jsonlCSV1, .jsonlCSV, .jsonlKVP, .mat, .nc, .nccsv, .tsv, or .xhtml
   chunk_size: 1000

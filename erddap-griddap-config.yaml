@@ -13,7 +13,7 @@ datasets:
       range:
         time: ["2025-01-09", "2025-03-06"]
         lat: [-67.989586, -80.989586]
-        lon: [133.98961, 161.98961]
+        long: [133.98961, 161.98961]
 query:
   output_format: "nc"
   chunk_size: 1000
